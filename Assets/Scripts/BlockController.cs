@@ -7,6 +7,9 @@ using UnityEngine.SceneManagement;
 public class BlockController : MonoBehaviour
 {
     public GameObject blockPrefab;
+    private int level = 1;
+    private int winLevel = 11;
+    private float timeoutMultiplier = 0.7f;
     private float moveTimeout = .5f;
     private float timeElapsed = 0.0f;
     private float direction = 1f;
@@ -20,7 +23,8 @@ public class BlockController : MonoBehaviour
     }
     private enum gameStates{
         gameOver, 
-        playing
+        playing,
+        won
     }
 
     private gameStates gameState = gameStates.playing;
@@ -37,6 +41,12 @@ public class BlockController : MonoBehaviour
     void Update()
     {
         if(gameState == gameStates.playing){
+            // Check if won
+            if(level == winLevel){
+                gameState = gameStates.won;
+                triggerGameWinAnimation();
+                return;
+            }
             timeElapsed += Time.deltaTime;
             if(timeElapsed > moveTimeout){
                 timeElapsed = 0;
@@ -71,9 +81,10 @@ public class BlockController : MonoBehaviour
 
                 // Raise player y by + 1
                 transform.position = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
+                level++;
 
                 // Decrease move timeout
-                moveTimeout *= .7f;
+                moveTimeout *= timeoutMultiplier;
             }
         }
     }
@@ -105,14 +116,32 @@ public class BlockController : MonoBehaviour
         }
     }
 
+    void triggerGameWinAnimation(){
+        tilemap.color = Color.green;
+        StartCoroutine("GameWinSceneAfterDelay");
+        transform.gameObject.GetComponent<TilemapRenderer>().enabled = false;
+        InvokeRepeating("flicker", 0, 0.4f);
+    }
     void triggerGameOverAnimation(){
-        StartCoroutine("GameOverAnimation");
+        StartCoroutine("GameOverSceneAfterDelay");
+        transform.gameObject.GetComponent<TilemapRenderer>().enabled = false;
+        InvokeRepeating("flicker", 0, 0.4f);
     }
 
-    IEnumerator GameOverAnimation()
+    void flicker(){
+        transform.gameObject.GetComponent<TilemapRenderer>().enabled = 
+            !transform.gameObject.GetComponent<TilemapRenderer>().enabled;
+    }
+    IEnumerator GameOverSceneAfterDelay()
     {
         yield return new WaitForSeconds(2);
         SceneManager.LoadScene("GameOver");
+    }
+
+    IEnumerator GameWinSceneAfterDelay()
+    {
+        yield return new WaitForSeconds(2);
+        SceneManager.LoadScene("GameWin");
     }
 
     void spawnAndTriggerFall(Vector3 coords){

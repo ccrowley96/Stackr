@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3962216469665451942}
   - component: {fileID: 3962216469665451943}
-  - component: {fileID: 3962216469665451940}
+  - component: {fileID: -6723656063562998314}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -81,7 +81,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!50 &3962216469665451940
+--- !u!50 &-6723656063562998314
 Rigidbody2D:
   serializedVersion: 4
   m_ObjectHideFlags: 0
