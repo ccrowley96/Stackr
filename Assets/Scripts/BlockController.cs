@@ -22,13 +22,13 @@ public class BlockController : MonoBehaviour
         left
     }
     private enum gameStates{
-        gameOver, 
+        gameOver,
         playing,
         won
     }
 
     private gameStates gameState = gameStates.playing;
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -53,7 +53,8 @@ public class BlockController : MonoBehaviour
                 transform.position = new Vector3(transform.position.x + direction, transform.position.y, transform.position.z);
             }
             // Check for space press
-            if(Input.touchCount > 0 || Input.GetKeyDown(KeyCode.Space)){
+            if((Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began) || Input.GetKeyDown(KeyCode.Space)){
+
                 // Check alignment
                 if(clone != null){
                     // Trim player
@@ -72,7 +73,7 @@ public class BlockController : MonoBehaviour
                     enabled = false;
                     return;
                 }
-                
+
                 // Clone player blocks at location & disable controller script on clone
                 clone = Instantiate(this.gameObject, transform.position, transform.rotation);
                 clone.GetComponent<BlockController>().enabled = false;
@@ -129,7 +130,7 @@ public class BlockController : MonoBehaviour
     }
 
     void flicker(){
-        transform.gameObject.GetComponent<TilemapRenderer>().enabled = 
+        transform.gameObject.GetComponent<TilemapRenderer>().enabled =
             !transform.gameObject.GetComponent<TilemapRenderer>().enabled;
     }
     IEnumerator GameOverSceneAfterDelay()
