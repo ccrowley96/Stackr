@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 
 public class GameWinController : MonoBehaviour
 {
-    // Start is called before the first frame update
+    public Text scoreText;  
+    private PersistantGameState gameStateRef;
     void Start()
     {
-        
+        gameStateRef = GameObject.Find("PersistantGameState").GetComponent<PersistantGameState>();
+        scoreText.text = "Score: " + gameStateRef.gameScore;
     }
 
     // Update is called once per frame

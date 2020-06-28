@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class BlockController : MonoBehaviour
 {
     public GameObject blockPrefab;
+    public AudioSource blockMove, gameOver, blockPlaced, gameWin;
     private int level = 1;
     private int winLevel = 11;
     private float timeoutMultiplier = 0.7f;
@@ -14,9 +15,11 @@ public class BlockController : MonoBehaviour
     private float timeElapsed = 0.0f;
     private float direction = 1f;
     private int dropCount = 0;
+    private int moveCount = 0;
     private GameObject grid;
     private Tilemap tilemap;
     private GameObject clone;
+    private PersistantGameState gameStateRef;
     private enum trimDirection{
         right,
         left
@@ -35,6 +38,9 @@ public class BlockController : MonoBehaviour
         grid = GameObject.Find("Grid");
         tilemap = gameObject.GetComponent<Tilemap>();
         tilemap.CompressBounds();
+        moveCount = 0;
+        gameStateRef = GameObject.Find("PersistantGameState").GetComponent<PersistantGameState>();
+        gameStateRef.gameScore = 0;
     }
 
     // Update is called once per frame
@@ -49,6 +55,11 @@ public class BlockController : MonoBehaviour
             }
             timeElapsed += Time.deltaTime;
             if(timeElapsed > moveTimeout){
+                if(blockMove && moveCount % 2 == 0){
+                    // only play every two moves
+                    blockMove.Play(0);
+                }
+                moveCount ++;
                 timeElapsed = 0;
                 transform.position = new Vector3(transform.position.x + direction, transform.position.y, transform.position.z);
             }
@@ -59,10 +70,10 @@ public class BlockController : MonoBehaviour
                 if(clone != null){
                     // Trim player
                     if(transform.position.x < clone.transform.position.x){
-                    trimStackr(trimDirection.left, (int) (clone.transform.position.x - transform.position.x));
+                        trimStackr(trimDirection.left, (int) (clone.transform.position.x - transform.position.x));
                     } else if(transform.position.x > clone.transform.position.x){
-                    trimStackr(trimDirection.right, (int) (transform.position.x - clone.transform.position.x));
-                    }
+                        trimStackr(trimDirection.right, (int) (transform.position.x - clone.transform.position.x));
+                    } 
                     // tilemap.SetTile(tilemap.origin, null);
                     tilemap.CompressBounds();
                 }
@@ -73,6 +84,15 @@ public class BlockController : MonoBehaviour
                     enabled = false;
                     return;
                 }
+
+                // Play block placed sound
+                if(blockPlaced){
+                    blockPlaced.Play(0);
+                }
+
+                // Update score
+                gameStateRef.gameScore += tilemap.size.x;
+
 
                 // Clone player blocks at location & disable controller script on clone
                 clone = Instantiate(this.gameObject, transform.position, transform.rotation);
@@ -118,6 +138,9 @@ public class BlockController : MonoBehaviour
     }
 
     void triggerGameWinAnimation(){
+        if(gameWin){
+            gameWin.Play(0);
+        }
         tilemap.color = Color.green;
         StartCoroutine("GameWinSceneAfterDelay");
         transform.gameObject.GetComponent<TilemapRenderer>().enabled = false;
@@ -125,6 +148,10 @@ public class BlockController : MonoBehaviour
     }
     void triggerGameOverAnimation(){
         StartCoroutine("GameOverSceneAfterDelay");
+         // Play block placed sound
+        if(gameOver){
+            gameOver.Play(0);
+        }
         transform.gameObject.GetComponent<TilemapRenderer>().enabled = false;
         InvokeRepeating("flicker", 0, 0.4f);
     }
@@ -141,7 +168,7 @@ public class BlockController : MonoBehaviour
 
     IEnumerator GameWinSceneAfterDelay()
     {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(3);
         SceneManager.LoadScene("GameWin");
     }
 
